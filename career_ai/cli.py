@@ -15,7 +15,7 @@ import typer
 from dotenv import load_dotenv
 from rich.console import Console
 
-# Load .env before anything else (sets ANTHROPIC_API_KEY etc.)
+# Load .env if present (optional — no API key required for claude CLI usage)
 load_dotenv(Path(".env"), override=False)
 
 app = typer.Typer(
@@ -64,6 +64,65 @@ def track() -> None:
     """Show application status table. Zero AI cost."""
     from career_ai.pipeline.track import run_track
     run_track()
+
+
+@app.command()
+def batch(
+    parallel: int = typer.Option(1, "--parallel", "-p", help="Number of concurrent claude workers"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing workers"),
+    retry_failed: bool = typer.Option(False, "--retry-failed", help="Retry previously failed jobs"),
+    job_id: str = typer.Option("", "--job-id", help="Process a single job by ID"),
+    merge_only: bool = typer.Option(False, "--merge-only", help="Merge tracker-additions without running workers"),
+    add_url: list[str] = typer.Option([], "--add", help="Add job URLs to batch-input.tsv"),
+    show_status: bool = typer.Option(False, "--status", help="Show batch state table"),
+) -> None:
+    """Run parallel claude workers for deep per-job evaluation (A-G scoring blocks).
+
+    Reads batch/batch-input.tsv. Add jobs with --add <url>.
+    Workers write JSON to batch/tracker-additions/, then merged into cache + SQLite.
+
+    Examples:
+      career batch --add https://jobs.lever.co/company/abc123
+      career batch --parallel 3
+      career batch --retry-failed
+      career batch --status
+    """
+    from career_ai.pipeline.batch import (
+        add_jobs_to_batch,
+        merge_tracker_additions,
+        run_batch,
+        show_batch_status,
+    )
+
+    if add_url:
+        add_jobs_to_batch(list(add_url))
+        return
+
+    if show_status:
+        show_batch_status()
+        return
+
+    if merge_only:
+        count = merge_tracker_additions()
+        console.print(f"[green]Merged {count} record(s).[/green]")
+        return
+
+    run_batch(parallel=parallel, dry_run=dry_run, retry_failed=retry_failed, job_id=job_id)
+
+
+@app.command()
+def auto(
+    min_score: int = typer.Option(70, "--min-score", "-s", help="Minimum score to auto-apply (0-100)"),
+) -> None:
+    """Full automated pipeline: scan → score → apply all strong matches.
+
+    Runs all three pipeline stages in sequence. Applies for every job
+    with score >= min_score that doesn't already have application materials.
+
+    Equivalent to: career scan && career score && career apply <each strong job>
+    """
+    from career_ai.pipeline.auto import run_auto
+    run_auto(min_score=min_score)
 
 
 @app.command()

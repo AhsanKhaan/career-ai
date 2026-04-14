@@ -2,7 +2,9 @@
 
 > AI-powered job search automation — YAML-driven, CLI-first, OpenClaw-optimized.
 
-Built for engineers who want a systematic, low-cost way to discover relevant jobs, score them against their profile, and generate truthful ATS-optimized applications — without spamming companies or wasting tokens.
+Built for engineers who want a systematic way to discover relevant jobs, score them against their profile, and generate truthful ATS-optimized applications — without an API key, without spamming companies, and without wasting tokens.
+
+**No API key required.** Uses the `claude` CLI with a Claude Max/Pro subscription — the same pattern as [career-ops](https://github.com/santifer/career-ops).
 
 ---
 
@@ -10,13 +12,17 @@ Built for engineers who want a systematic, low-cost way to discover relevant job
 
 ```
 career scan → career score → career apply <id> → career track
+              ─── or ───
+career auto   (all stages in one command)
 ```
 
 | Stage | Command | AI Cost | What It Does |
 |-------|---------|---------|--------------|
 | Discover | `career scan` | **$0** | Hits Greenhouse / Lever / Ashby APIs directly |
-| Score | `career score` | Claude (batched) | Scores all new jobs 0–100 against your profile |
-| Apply | `career apply <id>` | Claude (1 call) | Generates ATS summary, cover letter, keywords |
+| Score | `career score` | claude CLI (batched) | Scores all new jobs 0–100 against your profile |
+| Apply | `career apply <id>` | claude CLI (1 call) | Generates ATS summary, cover letter, keywords |
+| Auto | `career auto` | claude CLI | Full pipeline: scan → score → apply all strong matches |
+| Batch | `career batch` | claude CLI | Parallel workers — deep A-G evaluation per job |
 | Auto-fill | `career autoapply <id>` | $0 | Playwright fills form — pauses before submit |
 | Track | `career track` | **$0** | Rich table of all applications |
 
@@ -24,16 +30,24 @@ career scan → career score → career apply <id> → career track
 
 This system is built on OpenClaw principles — persistent context is never reprocessed:
 
-- **`CLAUDE.md`** — loaded by Claude Code once per session; the agent already knows your profile
+- **`CLAUDE.md`** — loaded by Claude Code once per session; the agent already knows your pipeline
 - **Zero-token scan** — `career scan` is pure HTTP with no AI calls whatsoever
-- **Prompt caching** — your profile YAML is embedded as an Anthropic `cache_control: ephemeral` system block, tokenized exactly once per session regardless of how many jobs you score
+- **Profile context** — your profile YAML is written to `batch/.profile-context.md` once per session and passed via `--append-system-prompt-file` on every `claude -p` call
 - **Incremental pipeline** — each stage skips items it has already processed; running `career score` twice scores nothing the second time
 
 ---
 
 ## Quick Start
 
-### 1. Install
+### 1. Prerequisites
+
+```bash
+# Install Claude Code CLI
+# https://claude.ai/download
+claude login   # Claude Max or Pro subscription — no API key
+```
+
+### 2. Install
 
 ```bash
 git clone https://github.com/AhsanKhaan/career-ai.git
@@ -42,12 +56,11 @@ pip install -e .
 playwright install chromium
 ```
 
-### 2. Configure
+### 3. Configure
 
 ```bash
 cp config/profile.example.yml config/profile.yml
 cp config/portals.example.yml config/portals.yml
-cp .env.example .env
 ```
 
 Edit `config/profile.yml` with your details:
@@ -64,26 +77,18 @@ target_roles:
     - "Full Stack Engineer"
 ```
 
-Add your Anthropic API key to `.env`:
-
-```
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-### 3. Run the pipeline
+### 4. Run the pipeline
 
 ```bash
-# Discover new jobs (free — no AI)
-career scan
+# Option A — Step by step
+career scan                        # Discover new jobs (free)
+career score                       # Score jobs against your profile
+career apply abc123def456          # Generate application for a high-scored job
+career track                       # View all applications
 
-# Score all new jobs against your profile
-career score
-
-# Generate application materials for a high-scored job
-career apply abc123def456
-
-# View all applications
-career track
+# Option B — Fully automated
+career auto                        # scan + score + apply all strong matches
+career auto --min-score 80         # Only apply for score >= 80
 ```
 
 ---
@@ -159,33 +164,55 @@ Supported portals: **Greenhouse**, **Lever**, **Ashby**, **Wellfound** (Playwrig
 
 ```
 career scan                          Discover new jobs — zero AI cost
-career score                         Score unscored jobs via Claude (batched)
+career score                         Score unscored jobs via claude CLI (batched)
 career apply <job_id>                Generate ATS summary, cover letter, keywords
+career auto [--min-score N]          Full pipeline: scan + score + apply all ≥ N
 career autoapply <job_id>            Playwright form fill → pause → you confirm
 career track                         Show application status table
 career status <job_id> <status>      Update application status
+career batch [options]               Parallel claude workers — deep per-job analysis
 ```
 
 **Valid statuses:** `pending` `scored` `applied` `interview` `offer` `rejected` `discarded`
 
 ---
 
-## Output Format
+## Batch Mode (Deep Evaluation)
 
-Every processed job produces a standard JSON record in the cache:
+`career batch` spawns parallel `claude -p` workers for deep per-job evaluation using a 5-block analysis template:
 
-```json
-{
-  "job_id": "a3f9c12b4e51",
-  "company": "Acme Corp",
-  "title": "Senior Frontend Engineer",
-  "location": "Remote",
-  "score": 82,
-  "decision": "strong",
-  "ats_summary": "Senior Frontend Engineer with 5+ years building React systems at scale...",
-  "cover_letter": "Dear Hiring Team...",
-  "keywords": ["React", "TypeScript", "Next.js", "AWS", "Node.js"]
-}
+- **A** — Role summary (fetches live job description)
+- **B** — Profile match score (0-100) with reasoning
+- **C** — Level strategy and gaps
+- **D** — ATS materials (summary + cover letter + keywords)
+- **E** — Interview prep questions
+
+```bash
+# Add jobs to the batch queue
+career batch --add https://jobs.lever.co/company/abc123
+career batch --add https://job-boards.greenhouse.io/acme/jobs/456
+
+# Run all pending jobs (1 worker at a time)
+career batch
+
+# Run 3 workers in parallel
+career batch --parallel 3
+
+# Retry failed jobs
+career batch --retry-failed
+
+# Preview without executing
+career batch --dry-run
+
+# View batch state
+career batch --status
+```
+
+You can also drive the batch runner directly from bash:
+
+```bash
+./batch/batch-runner.sh --parallel 3
+./batch/batch-runner.sh --retry-failed
 ```
 
 ---
@@ -213,6 +240,12 @@ Supported form types: **Greenhouse**, **Lever**, **Ashby**.
 data/cache/                   Job scan results (JSON, one file per date)
   └── 2026-04-14.json         Append-only; scores/materials written back in-place
 data/career-ai.db             SQLite application tracker
+batch/                        Batch runner inputs, state, and worker logs
+  ├── batch-input.tsv         Job queue (you manage this)
+  ├── batch-state.tsv         Auto-managed state (resumable, gitignored)
+  ├── .profile-context.md     Profile written once per session (gitignored)
+  ├── logs/                   Per-job worker logs (gitignored)
+  └── tracker-additions/      Worker JSON output before merge (gitignored)
 output/                       Resume PDFs (for upload during autoapply)
 ```
 
@@ -224,6 +257,7 @@ output/                       Resume PDFs (for upload during autoapply)
 | `config/portals.yml` | **You** | Never auto-modified |
 | `data/` | System | Runtime data, gitignored |
 | `prompts/` | System | Prompt templates, safe to update |
+| `batch/batch-input.tsv` | **You** | Your job queue — edit manually or via `--add` |
 
 ---
 
@@ -236,12 +270,14 @@ career_ai/
 ├── models.py           Job, Application dataclasses
 ├── session.py          In-process dedup state
 ├── ai/
-│   ├── client.py       Anthropic wrapper — profile in ephemeral cache block
+│   ├── client.py       claude CLI wrapper — profile in .profile-context.md
 │   └── prompts.py      On-demand loader from prompts/*.md
 ├── pipeline/
 │   ├── scan.py         Zero-token HTTP scraping + dedup
-│   ├── score.py        Batched Claude scoring (20 jobs/call)
+│   ├── score.py        Batched claude scoring (20 jobs/call)
 │   ├── apply.py        Single-job application generation
+│   ├── batch.py        Parallel worker orchestration + merge
+│   ├── auto.py         Full automated pipeline (scan+score+apply)
 │   └── track.py        SQLite → Rich table
 ├── scrapers/
 │   ├── greenhouse.py   boards-api.greenhouse.io — single call with content
@@ -254,6 +290,12 @@ career_ai/
 └── autoapply/
     ├── runner.py        Safety gate + handler dispatch
     └── forms/           Greenhouse / Lever / Ashby form handlers
+
+batch/
+├── batch-runner.sh      Bash orchestrator — parallel claude -p workers
+├── batch-prompt.md      Worker evaluation template (A-E blocks)
+├── batch-input.tsv      Your job queue
+└── logs/                Per-worker output logs
 ```
 
 ---
@@ -261,7 +303,7 @@ career_ai/
 ## Requirements
 
 - Python 3.11+
-- `ANTHROPIC_API_KEY` — only needed for `career score` and `career apply`
+- `claude` CLI installed and logged in (`claude login`) — Claude Max or Pro subscription
 - Playwright Chromium — only needed for `career autoapply` and Wellfound scraping
 
 ---

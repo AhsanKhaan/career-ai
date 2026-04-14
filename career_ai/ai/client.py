@@ -1,63 +1,79 @@
-"""Claude API client — OpenClaw Rules 3 & 4.
+"""Claude CLI client — no API key required.
 
-OpenClaw Rule 3: Profile YAML is embedded in the system block with
-cache_control: ephemeral — tokenized exactly once per session.
-All subsequent score/apply calls hit the Anthropic prompt cache
-at ~10% of the input token cost.
+Uses `claude -p --dangerously-skip-permissions` (same pattern as career-ops batch runner).
+Requires the `claude` CLI to be installed and logged in (Claude Max / Pro subscription).
 
-OpenClaw Rule 4: Prompts are loaded from prompts/*.md on-demand.
+Install Claude Code CLI: https://claude.ai/download
+Then log in: claude login
 
-This module never imports from pipeline/ — it is a pure utility.
+OpenClaw rules maintained:
+- Profile YAML written once to batch/.profile-context.md (singleton)
+- Passed via --append-system-prompt-file on every call
+- CLAUDE.md loaded automatically (cwd = project root)
+- Incremental: score/apply stages skip already-processed jobs
 """
 
 from __future__ import annotations
 
 import json
 import re
-
-import anthropic
+import subprocess
+from pathlib import Path
 
 from career_ai.ai.prompts import load_prompt
 from career_ai.models import Job
 
-_MODEL = "claude-opus-4-5"
 _CLIENT: "CareerAIClient | None" = None
-
-_BATCH_SIZE = 20  # Jobs per Claude scoring call
+_BATCH_SIZE = 20  # Jobs per scoring call
+_CTX_FILE = Path("batch/.profile-context.md")
+_TIMEOUT = 180  # seconds per claude -p call
 
 
 class CareerAIClient:
     def __init__(self, profile_yaml: str) -> None:
-        self._client = anthropic.Anthropic()
-        # OpenClaw: profile embedded ONCE as a cached system block.
-        # cache_control: ephemeral → Anthropic caches these tokens for up to 5 min.
-        # A session scoring 100 jobs (5 calls) tokenizes the profile exactly once.
-        self._system: list[dict] = [
-            {
-                "type": "text",
-                "text": (
-                    "You are an expert career advisor. "
-                    "The following is the candidate's profile — use it for all evaluations.\n\n"
-                    f"CANDIDATE PROFILE:\n{profile_yaml}"
-                ),
-                "cache_control": {"type": "ephemeral"},
-            }
-        ]
-
-    def _call(self, user_prompt: str, max_tokens: int) -> str:
-        msg = self._client.messages.create(
-            model=_MODEL,
-            max_tokens=max_tokens,
-            system=self._system,
-            messages=[{"role": "user", "content": user_prompt}],
+        self._profile_yaml = profile_yaml
+        # Write profile context file once per session (OpenClaw: profile read once)
+        _CTX_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _CTX_FILE.write_text(
+            "You are an expert career advisor.\n"
+            "The following is the candidate's complete profile. "
+            "Use it for all scoring and application generation.\n\n"
+            f"CANDIDATE PROFILE:\n\n{profile_yaml}",
+            encoding="utf-8",
         )
-        return msg.content[0].text
+
+    def _call(self, user_prompt: str) -> str:
+        """Invoke claude CLI in non-interactive mode.
+
+        Equivalent to career-ops:
+          claude -p --dangerously-skip-permissions --append-system-prompt-file profile.md "prompt"
+        """
+        result = subprocess.run(
+            [
+                "claude", "-p",
+                "--dangerously-skip-permissions",
+                "--append-system-prompt-file", str(_CTX_FILE),
+                user_prompt,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=_TIMEOUT,
+            cwd=str(Path.cwd()),  # Project root → CLAUDE.md loaded as context
+        )
+        if result.returncode != 0:
+            stderr = result.stderr[:300] if result.stderr else "(no stderr)"
+            raise RuntimeError(
+                f"claude CLI exited with code {result.returncode}.\n"
+                f"Is 'claude' installed and logged in? Run: claude login\n"
+                f"stderr: {stderr}"
+            )
+        return result.stdout.strip()
 
     def score_batch(self, jobs: list[Job]) -> list[dict]:
-        """Score up to BATCH_SIZE jobs in a single API call.
+        """Score up to BATCH_SIZE jobs in a single claude -p call.
 
-        Returns a list of {job_id, score, decision, reasoning} dicts.
-        On parse failure, jobs in the batch are marked score=-1.
+        Returns list of {job_id, score, decision, reasoning}.
+        On parse failure marks all jobs as score=-1.
         """
         job_summaries = [
             {
@@ -71,25 +87,24 @@ class CareerAIClient:
         ]
         prompt = load_prompt("score", jobs_json=json.dumps(job_summaries, ensure_ascii=False))
 
-        raw = self._call(prompt, max_tokens=4096)
+        raw = self._call(prompt)
         results = _parse_json_array(raw)
 
         if results is None:
-            # One retry with explicit instruction
-            raw = self._call(prompt + "\n\nReturn ONLY the JSON array.", max_tokens=4096)
+            raw = self._call(prompt + "\n\nReturn ONLY the JSON array, no other text.")
             results = _parse_json_array(raw)
 
         if results is None:
-            # Mark all jobs in batch as error
-            return [{"job_id": j.job_id, "score": -1, "decision": "error", "reasoning": ""} for j in jobs]
-
+            return [
+                {"job_id": j.job_id, "score": -1, "decision": "error", "reasoning": "parse failure"}
+                for j in jobs
+            ]
         return results
 
     def generate_application(self, job: Job) -> dict:
         """Generate ATS summary, cover letter, and keywords for one job.
 
         Returns {ats_summary, cover_letter, keywords}.
-        Validates word counts after generation; retries once if violated.
         """
         prompt = load_prompt(
             "apply",
@@ -100,24 +115,23 @@ class CareerAIClient:
             job_description=job.description[:4000],
         )
 
-        raw = self._call(prompt, max_tokens=1024)
+        raw = self._call(prompt)
         result = _parse_json_object(raw)
 
         if result is None:
-            raw = self._call(prompt + "\n\nReturn ONLY valid JSON.", max_tokens=1024)
+            raw = self._call(prompt + "\n\nReturn ONLY valid JSON, nothing else.")
             result = _parse_json_object(raw)
 
         if result is None:
             return {"ats_summary": "", "cover_letter": "", "keywords": []}
 
-        # Validate constraints; retry once if violated
         violations = _check_apply_constraints(result)
         if violations:
             correction = (
-                f"\n\nPrevious output violated these constraints: {'; '.join(violations)}. "
+                f"\n\nPrevious output violated constraints: {'; '.join(violations)}. "
                 "Regenerate strictly within limits."
             )
-            raw = self._call(prompt + correction, max_tokens=1024)
+            raw = self._call(prompt + correction)
             result = _parse_json_object(raw) or result
 
         return {
@@ -128,10 +142,10 @@ class CareerAIClient:
 
 
 def get_claude_client() -> CareerAIClient:
-    """Return process-level singleton, initialized with profile on first call.
+    """Return process-level singleton.
 
-    OpenClaw: profile YAML read once, passed to client constructor once.
-    All subsequent calls reuse the same client (and its cached system block).
+    Profile YAML is read from config once and written to the context file.
+    All subsequent calls reuse the same client and context file.
     """
     global _CLIENT
     if _CLIENT is None:
@@ -148,10 +162,11 @@ def reset_claude_client() -> None:
     """Reset singleton — used in tests only."""
     global _CLIENT
     _CLIENT = None
+    if _CTX_FILE.exists():
+        _CTX_FILE.unlink(missing_ok=True)
 
 
 def _parse_json_array(text: str) -> list[dict] | None:
-    """Extract and parse the first JSON array from a Claude response."""
     text = text.strip()
     match = re.search(r"\[.*\]", text, re.DOTALL)
     if not match:
@@ -166,7 +181,6 @@ def _parse_json_array(text: str) -> list[dict] | None:
 
 
 def _parse_json_object(text: str) -> dict | None:
-    """Extract and parse the first JSON object from a Claude response."""
     text = text.strip()
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if not match:
@@ -181,17 +195,14 @@ def _parse_json_object(text: str) -> dict | None:
 
 
 def _check_apply_constraints(result: dict) -> list[str]:
-    """Return list of constraint violations for apply output."""
     violations = []
     summary = result.get("ats_summary", "")
     cover = result.get("cover_letter", "")
     keywords = result.get("keywords", [])
-
     if len(summary.split()) > 80:
-        violations.append(f"ats_summary exceeds 80 words ({len(summary.split())} words)")
+        violations.append(f"ats_summary exceeds 80 words ({len(summary.split())})")
     if len(cover.split()) > 120:
-        violations.append(f"cover_letter exceeds 120 words ({len(cover.split())} words)")
+        violations.append(f"cover_letter exceeds 120 words ({len(cover.split())})")
     if not isinstance(keywords, list) or len(keywords) != 5:
-        violations.append(f"keywords must be a list of exactly 5 items (got {len(keywords)})")
-
+        violations.append(f"keywords must be exactly 5 items (got {len(keywords)})")
     return violations

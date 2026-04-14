@@ -11,7 +11,6 @@ requires-python = ">=3.11"
 dependencies = [
     "typer[all]>=0.12",
     "rich>=13.0",
-    "anthropic>=0.28",
     "pyyaml>=6.0",
     "httpx>=0.27",
     "playwright>=1.44",

@@ -22,6 +22,12 @@ logs/*.log
 output/*
 !output/.gitkeep
 
+# Batch runner state and generated files
+batch/batch-state.tsv
+batch/logs/*.log
+batch/tracker-additions/*.json
+batch/.profile-context.md
+
 # OS
 .DS_Store
 Thumbs.db

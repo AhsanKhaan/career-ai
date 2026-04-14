@@ -10,7 +10,14 @@
       "Bash(git --version)",
       "Bash(git -C \"C:\\\\Work\\\\career-ai\" config --global credential.helper)",
       "Bash(git config:*)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -H \"Authorization: token invalid\" https://api.github.com/user)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -H \"Authorization: token invalid\" https://api.github.com/user)",
+      "Bash(py -m pytest tests/ -v --tb=short)",
+      "Bash(py -m pip install -e \".[dev]\" -q)",
+      "Bash(py -m pip show pytest)",
+      "Bash(py -m pip install pytest pytest-asyncio pytest-httpx)",
+      "Bash(py -m pip install pytest)",
+      "Bash(py -m pytest tests/test_scoring.py -v --tb=long)",
+      "Bash(py -m pytest tests/ -v --tb=short --ignore=tests/test_scrapers.py)"
     ]
   }
 }

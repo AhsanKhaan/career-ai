@@ -18,9 +18,10 @@ from career_ai.models import Job, make_job_id
 
 
 @pytest.fixture
-def client() -> CareerAIClient:
-    with patch("anthropic.Anthropic"):
-        return CareerAIClient(profile_yaml="name: Test User\nroles: [Frontend]")
+def client(tmp_path, monkeypatch) -> CareerAIClient:
+    # Point _CTX_FILE to tmp dir so we don't write to project root during tests
+    monkeypatch.chdir(tmp_path)
+    return CareerAIClient(profile_yaml="name: Test User\nroles: [Frontend]")
 
 
 def test_parse_json_array_valid():
@@ -111,11 +112,12 @@ def test_score_batch_calls_api_once_for_20_jobs(client):
         {"job_id": j.job_id, "score": 75, "decision": "apply", "reasoning": "good"} for j in jobs
     ])
 
-    with patch.object(client, "_call", return_value=mock_response) as mock_call:
-        results = client.score_batch(jobs)
-        # Should be called exactly once for 20 jobs
-        assert mock_call.call_count == 1
-        assert len(results) == 20
+    with patch("career_ai.ai.client.load_prompt", return_value="score prompt"):
+        with patch.object(client, "_call", return_value=mock_response) as mock_call:
+            results = client.score_batch(jobs)
+            # Should be called exactly once for 20 jobs
+            assert mock_call.call_count == 1
+            assert len(results) == 20
 
 
 def test_score_batch_retries_on_parse_failure(client):
@@ -138,17 +140,18 @@ def test_score_batch_retries_on_parse_failure(client):
     ])
 
     call_count = 0
-    def mock_call(prompt, max_tokens):
+    def mock_call(prompt):
         nonlocal call_count
         call_count += 1
         if call_count == 1:
             return "invalid json garbage"
         return valid_response
 
-    with patch.object(client, "_call", side_effect=mock_call):
-        results = client.score_batch(jobs)
-        assert call_count == 2  # First call failed, second succeeded
-        assert results[0]["score"] == 80
+    with patch("career_ai.ai.client.load_prompt", return_value="score prompt"):
+        with patch.object(client, "_call", side_effect=mock_call):
+            results = client.score_batch(jobs)
+            assert call_count == 2  # First call failed, second succeeded
+            assert results[0]["score"] == 80
 
 
 def test_score_batch_marks_error_after_two_failures(client):
@@ -166,7 +169,8 @@ def test_score_batch_marks_error_after_two_failures(client):
         )
     ]
 
-    with patch.object(client, "_call", return_value="not json"):
-        results = client.score_batch(jobs)
-        assert results[0]["score"] == -1
-        assert results[0]["decision"] == "error"
+    with patch("career_ai.ai.client.load_prompt", return_value="score prompt"):
+        with patch.object(client, "_call", return_value="not json"):
+            results = client.score_batch(jobs)
+            assert results[0]["score"] == -1
+            assert results[0]["decision"] == "error"

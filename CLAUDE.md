@@ -8,8 +8,11 @@ ATS-optimized application materials, and tracks your applications — all from a
 
 Built on three principles:
 - **Zero-token scan**: `career scan` hits job APIs directly, no AI cost
-- **OpenClaw memory**: profile.yml loaded once, cached in Claude's prompt system block — never re-tokenized
+- **OpenClaw memory**: profile.yml loaded once, written to `batch/.profile-context.md` and passed via `--append-system-prompt-file` on every `claude -p` call — never re-tokenized
 - **Pipeline independence**: each stage reads only from its upstream store, never repeats prior work
+
+**No API key required.** Uses the `claude` CLI with a Claude Max/Pro subscription.
+Install: `https://claude.ai/download` — then run `claude login`.
 
 ## Pipeline
 
@@ -20,8 +23,10 @@ scan (zero-token) → score → apply → track
 | Command | What it does | AI cost |
 |---------|-------------|---------|
 | `career scan` | Discover new jobs from portals.yml, deduplicate, cache | **$0** |
-| `career score` | Score unscored jobs 0–100 against your profile | Claude API (batched 20/call) |
-| `career apply <job_id>` | Generate ATS summary, cover letter, keywords | Claude API (1 call) |
+| `career score` | Score unscored jobs 0–100 against your profile | claude CLI (batched 20/call) |
+| `career apply <job_id>` | Generate ATS summary, cover letter, keywords | claude CLI (1 call) |
+| `career batch` | Run batch workers via parallel claude -p processes | claude CLI |
+| `career auto` | Full automated pipeline: scan → score → apply all strong matches | claude CLI |
 | `career autoapply <job_id>` | Playwright form fill — pauses before submit, you confirm | None until you confirm |
 | `career track` | Rich table of all applications | **$0** |
 
@@ -51,22 +56,23 @@ scan (zero-token) → score → apply → track
 ## Onboarding
 
 Before running any command, check:
-1. Does `config/profile.yml` exist? If not, copy from `config/profile.example.yml` and fill in details.
-2. Does `config/portals.yml` exist? If not, copy from `config/portals.example.yml`.
-3. Is `ANTHROPIC_API_KEY` set in `.env`? Required for `career score` and `career apply`.
+1. Is `claude` CLI installed and logged in? Run `claude login` if not.
+2. Does `config/profile.yml` exist? If not, copy from `config/profile.example.yml` and fill in details.
+3. Does `config/portals.yml` exist? If not, copy from `config/portals.example.yml`.
 
 ## Quick Start
 
 ```bash
 pip install -e .
 playwright install chromium
+claude login                                        # Claude Max/Pro — no API key needed
 cp config/profile.example.yml config/profile.yml   # fill in your details
 cp config/portals.example.yml config/portals.yml   # customize companies
-cp .env.example .env                                # add ANTHROPIC_API_KEY
 
 career scan       # discover jobs (free)
-career score      # score with AI
+career score      # score with AI (uses claude CLI)
 career apply abc123def456   # generate application for a job_id
+career auto       # full automated pipeline: scan → score → apply all strong matches
 career track      # view status table
 ```
 

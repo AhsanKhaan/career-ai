@@ -44,9 +44,8 @@ def test_apply_generates_materials(tmp_cache_dir, sample_job, mock_apply_respons
     append_jobs([sample_job])
 
     with patch("career_ai.ai.client.CareerAIClient._call", return_value=mock_apply_response):
-        with patch("career_ai.ai.client.anthropic.Anthropic"):
-            from career_ai.pipeline.apply import run_apply
-            run_apply(sample_job.job_id)
+        from career_ai.pipeline.apply import run_apply
+        run_apply(sample_job.job_id)
 
     from career_ai.storage.cache import find_job
     updated = find_job(sample_job.job_id)
@@ -60,11 +59,10 @@ def test_apply_skips_if_already_has_summary(tmp_cache_dir, sample_job, capsys):
     append_jobs([sample_job])
 
     with patch("career_ai.ai.client.CareerAIClient._call") as mock_call:
-        with patch("career_ai.ai.client.anthropic.Anthropic"):
-            from career_ai.pipeline.apply import run_apply
-            run_apply(sample_job.job_id)
-            # Should not call Claude if materials already exist
-            mock_call.assert_not_called()
+        from career_ai.pipeline.apply import run_apply
+        run_apply(sample_job.job_id)
+        # Should not call Claude if materials already exist
+        mock_call.assert_not_called()
 
 
 def test_apply_exits_if_job_not_found(tmp_cache_dir):
@@ -81,9 +79,8 @@ def test_apply_records_in_tracker(tmp_cache_dir, sample_job, mock_apply_response
     append_jobs([sample_job])
 
     with patch("career_ai.ai.client.CareerAIClient._call", return_value=mock_apply_response):
-        with patch("career_ai.ai.client.anthropic.Anthropic"):
-            from career_ai.pipeline.apply import run_apply
-            run_apply(sample_job.job_id)
+        from career_ai.pipeline.apply import run_apply
+        run_apply(sample_job.job_id)
 
     from career_ai.storage.tracker import get_tracker
     from career_ai.models import ApplicationStatus
