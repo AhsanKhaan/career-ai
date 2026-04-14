@@ -1,0 +1,27 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Runtime data (keep .gitkeep files, ignore actual data)
+data/cache/*.json
+data/*.db
+logs/*.log
+
+# Output (keep directory structure, ignore generated files)
+output/*
+!output/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db

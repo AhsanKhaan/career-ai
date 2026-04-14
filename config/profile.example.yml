@@ -1,0 +1,77 @@
+# career-ai Profile Configuration
+# Copy this file to config/profile.yml and fill in your details.
+# This is your single source of truth — never auto-modified by the system.
+
+candidate:
+  full_name: "Your Full Name"
+  email: "you@example.com"
+  phone: "+1-555-000-0000"
+  location: "City, Country"
+  linkedin: "linkedin.com/in/yourhandle"
+  portfolio_url: "https://yourportfolio.com"
+  github: "github.com/yourhandle"
+  # Optional: path to your resume PDF for auto-apply
+  # resume_path: "output/resume.pdf"
+
+target_roles:
+  # Your primary target role titles (used for scoring weight)
+  primary:
+    - "Senior Frontend Engineer"
+    - "Senior Software Engineer"
+    - "Full Stack Engineer"
+  # Archetypes help the scoring system calibrate fit
+  archetypes:
+    - name: "Senior Frontend Engineer"
+      level: "Senior"
+      fit: "primary"       # primary | secondary | adjacent
+    - name: "Full Stack Engineer"
+      level: "Senior"
+      fit: "primary"
+    - name: "Frontend Tech Lead"
+      level: "Lead"
+      fit: "adjacent"
+
+narrative:
+  headline: "Senior Software Engineer | 5+ Years | React, Node.js, TypeScript"
+  exit_story: "Built production systems serving 100K+ users. Ready for platform-scale impact."
+  superpowers:
+    - "Frontend architecture at scale"
+    - "Performance optimization"
+    - "Workflow automation"
+  proof_points:
+    - name: "Project Name"
+      url: "https://your-project.com"
+      hero_metric: "Delivered X% improvement in Y"
+
+compensation:
+  target_range: "$120,000-$160,000/year"
+  currency: "USD"
+  minimum: "$100,000/year"
+  location_flexibility: "Remote preferred"
+
+location:
+  country: "United States"
+  city: "San Francisco"
+  timezone: "PST (UTC-8)"
+  visa_status: "Authorized to work"
+  onsite_availability: "Remote or hybrid"
+
+skills:
+  languages:
+    - TypeScript
+    - JavaScript
+    - Python
+  frameworks:
+    - React
+    - Next.js
+    - Node.js
+  tools:
+    - AWS
+    - Docker
+    - PostgreSQL
+
+experience:
+  years_total: 5
+  current_company: "Current Employer"
+  current_title: "Senior Software Engineer"
+  current_start: "2021-01"

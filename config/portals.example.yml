@@ -1,0 +1,85 @@
+# career-ai Portal Configuration
+# Copy this file to config/portals.yml and customize for your search.
+# This is your single source of truth for job sources — never auto-modified.
+
+# -- Title filter --
+# Jobs must match at least 1 positive AND 0 negatives (case-insensitive).
+
+title_filter:
+  positive:
+    - "Frontend"
+    - "Front-end"
+    - "React"
+    - "Next.js"
+    - "Full Stack"
+    - "Fullstack"
+    - "TypeScript"
+    - "JavaScript"
+    - "UI Engineer"
+    - "Web Engineer"
+  negative:
+    - "Junior"
+    - "Intern"
+    - "iOS"
+    - "Android"
+    - "Embedded"
+    - "Blockchain"
+    - "Web3"
+    - "DevOps"
+    - "Infrastructure"
+    - "Data Engineer"
+    - "Machine Learning"
+
+# -- Tracked companies --
+# scan_method is auto-detected from careers_url domain if not specified.
+# Add api: field for Greenhouse companies to use their structured JSON API.
+
+tracked_companies:
+
+  # Greenhouse — fast API with full job descriptions
+  - name: Anthropic
+    careers_url: https://job-boards.greenhouse.io/anthropic
+    api: https://boards-api.greenhouse.io/v1/boards/anthropic/jobs
+    enabled: true
+
+  - name: Vercel
+    careers_url: https://job-boards.greenhouse.io/vercel
+    api: https://boards-api.greenhouse.io/v1/boards/vercel/jobs
+    enabled: true
+
+  - name: Contentful
+    careers_url: https://job-boards.greenhouse.io/contentful
+    api: https://boards-api.greenhouse.io/v1/boards/contentful/jobs
+    enabled: true
+
+  - name: Intercom
+    careers_url: https://job-boards.greenhouse.io/intercom
+    api: https://boards-api.greenhouse.io/v1/boards/intercom/jobs
+    enabled: true
+
+  - name: Airtable
+    careers_url: https://job-boards.greenhouse.io/airtable
+    api: https://boards-api.greenhouse.io/v1/boards/airtable/jobs
+    enabled: true
+
+  # Lever — JSON API
+  - name: Mistral AI
+    careers_url: https://jobs.lever.co/mistral
+    enabled: true
+
+  - name: Weights & Biases
+    careers_url: https://jobs.lever.co/wandb
+    enabled: true
+
+  # Ashby — two-call API (list + detail per filtered job)
+  - name: ElevenLabs
+    careers_url: https://jobs.ashbyhq.com/elevenlabs
+    enabled: true
+
+  - name: Perplexity
+    careers_url: https://jobs.ashbyhq.com/perplexity
+    enabled: true
+
+  - name: LangChain
+    careers_url: https://jobs.ashbyhq.com/langchain
+    enabled: true

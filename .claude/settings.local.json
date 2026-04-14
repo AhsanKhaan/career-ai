@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m py_compile career_ai/models.py career_ai/config.py career_ai/session.py career_ai/storage/cache.py career_ai/storage/tracker.py career_ai/scrapers/base.py career_ai/scrapers/greenhouse.py career_ai/scrapers/lever.py career_ai/scrapers/ashby.py career_ai/ai/prompts.py)",
+      "Bash(py --version)",
+      "Bash(where python3:*)",
+      "Bash(where py:*)",
+      "Bash(py -m py_compile career_ai/models.py career_ai/config.py career_ai/session.py career_ai/storage/cache.py career_ai/storage/tracker.py career_ai/scrapers/base.py career_ai/scrapers/greenhouse.py career_ai/scrapers/lever.py career_ai/scrapers/ashby.py career_ai/ai/prompts.py career_ai/ai/client.py career_ai/pipeline/scan.py career_ai/pipeline/score.py career_ai/pipeline/apply.py career_ai/pipeline/track.py career_ai/cli.py)",
+      "Bash(where git:*)",
+      "Bash(git --version)",
+      "Bash(git -C \"C:\\\\Work\\\\career-ai\" config --global credential.helper)",
+      "Bash(git config:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -H \"Authorization: token invalid\" https://api.github.com/user)"
+    ]
+  }
+}
