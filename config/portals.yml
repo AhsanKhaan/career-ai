@@ -1,0 +1,687 @@
+# Portal Scanner Configuration
+# Used by /career-ops scan to discover new offers automatically.
+#
+# Strategy (3 levels):
+#   1. Playwright → careers_url of each company (real-time, reliable)
+#   2. Greenhouse API → structured JSON (fast, Greenhouse-only)
+#   3. WebSearch with site: filters (broad discovery, may be stale)
+#
+# IMPORTANT: Each company in tracked_companies MUST have careers_url.
+#
+# Customized for: Ahsan Khan - Senior Software Engineer
+# Focus: React/MERN/Laravel, Fintech, Saudi Arabia (Riyadh), Remote + Visa Sponsorship
+
+# -- Title filter --
+# The scanner uses these keywords to decide if a title is relevant.
+# At least 1 positive must match AND 0 negatives must match (case-insensitive).
+
+title_filter:
+  positive:
+    # -- Frontend/Full Stack roles --
+    - "Software Engineer"
+    - "Frontend"
+    - "Front End"
+    - "Front-End"
+    - "Full Stack"
+    - "Fullstack"
+    - "Full-Stack"
+    - "Web Developer"
+    - "Web Engineer"
+    - "Application Developer"
+    - "UI Engineer"
+    - "Platform Engineer"
+    - "Product Engineer"
+    # -- Tech stack specific --
+    - "React"
+    - "React.js"
+    - "ReactJS"
+    - "Next.js"
+    - "Node.js"
+    - "Node"
+    - "TypeScript"
+    - "JavaScript"
+    - "MERN"
+    - "Laravel"
+    - "PHP"
+    # -- Fintech roles --
+    - "Fintech"
+    - "Payments"
+    - "Payment"
+    - "Banking"
+    - "Financial"
+    # -- Arabic keywords (GCC market) --
+    - "مطور"
+    - "مهندس برمجيات"
+  negative:
+    # Roles to exclude
+    - "Junior"
+    - "Intern"
+    - "Internship"
+    - "Entry Level"
+    - "Graduate"
+    - "Trainee"
+    - "iOS"
+    - "Android"
+    - "Mobile Developer"
+    - "Mobile Engineer"
+    - "React Native"
+    - "Flutter"
+    - "Data Scientist"
+    - "Data Engineer"
+    - "ML Engineer"
+    - "Machine Learning"
+    - "AI Engineer"
+    - "DevOps"
+    - "SRE"
+    - "Site Reliability"
+    - "Security Engineer"
+    - "QA Engineer"
+    - "Test Engineer"
+    - "Embedded"
+    - "Firmware"
+    - "Hardware"
+    - "FPGA"
+    - "Blockchain"
+    - "Web3"
+    - "Crypto"
+    - "SAP"
+    - "Salesforce Admin"
+    - "Oracle EBS"
+    - "Mainframe"
+    - "COBOL"
+    - ".NET"
+    - "Java "
+    - "C++"
+    - "Rust"
+    - "Golang"
+  seniority_boost:
+    # These prefixes add relevance but are not required
+    - "Senior"
+    - "Staff"
+    - "Principal"
+    - "Lead"
+    - "Head"
+    - "Director"
+
+# -- Search queries --
+# Each query triggers a WebSearch. Use site: to filter by portal.
+# The scanner extracts title, URL, and company from results.
+
+search_queries:
+
+  # -- SAUDI ARABIA SPECIFIC --
+
+  - name: Ashby — React Saudi Arabia
+    query: 'site:jobs.ashbyhq.com "React" OR "Frontend" OR "Full Stack" "Saudi Arabia" OR "Riyadh"'
+    enabled: true
+
+  - name: Ashby — Software Engineer Riyadh
+    query: 'site:jobs.ashbyhq.com "Software Engineer" OR "Web Developer" Riyadh'
+    enabled: true
+
+  - name: Greenhouse — React Saudi
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "React" OR "Frontend" "Saudi Arabia" OR "Riyadh"'
+    enabled: true
+
+  - name: Greenhouse — Full Stack Saudi
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "Full Stack" OR "Node.js" Saudi Arabia'
+    enabled: true
+
+  - name: Lever — Frontend Saudi
+    query: 'site:jobs.lever.co "React" OR "Frontend" OR "TypeScript" Saudi Arabia OR Riyadh'
+    enabled: true
+
+  - name: LinkedIn — React Riyadh Visa
+    query: 'site:linkedin.com/jobs "React Developer" OR "Frontend Engineer" Riyadh "visa sponsorship"'
+    enabled: true
+
+  - name: LinkedIn — Full Stack Saudi Fintech
+    query: 'site:linkedin.com/jobs "Full Stack" OR "Software Engineer" "Saudi Arabia" fintech'
+    enabled: true
+
+  # -- UAE / MIDDLE EAST --
+
+  - name: Greenhouse — React Dubai
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "React" OR "Frontend" Dubai OR UAE'
+    enabled: true
+
+  - name: Ashby — Software Engineer Dubai
+    query: 'site:jobs.ashbyhq.com "Software Engineer" OR "Full Stack" Dubai'
+    enabled: true
+
+  - name: Lever — Frontend UAE
+    query: 'site:jobs.lever.co "React" OR "Frontend" OR "Node.js" UAE OR Dubai'
+    enabled: true
+
+  # -- REMOTE + VISA SPONSORSHIP --
+
+  - name: Ashby — React Remote
+    query: 'site:jobs.ashbyhq.com "React" OR "Frontend" remote worldwide'
+    enabled: true
+
+  - name: Ashby — Full Stack Remote
+    query: 'site:jobs.ashbyhq.com "Full Stack" OR "Node.js" remote'
+    enabled: true
+
+  - name: Ashby — TypeScript Remote
+    query: 'site:jobs.ashbyhq.com "TypeScript" OR "Next.js" remote senior'
+    enabled: true
+
+  - name: Greenhouse — React Remote
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "React" OR "Frontend Engineer" remote worldwide'
+    enabled: true
+
+  - name: Greenhouse — Full Stack Remote
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "Full Stack" OR "Software Engineer" remote'
+    enabled: true
+
+  - name: Greenhouse — Node.js Remote
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "Node.js" OR "TypeScript" remote senior'
+    enabled: true
+
+  - name: Lever — React Remote
+    query: 'site:jobs.lever.co "React" OR "Frontend" remote'
+    enabled: true
+
+  - name: Lever — Full Stack Remote
+    query: 'site:jobs.lever.co "Full Stack Engineer" OR "Software Engineer" remote'
+    enabled: true
+
+  - name: Wellfound — React Remote
+    query: 'site:wellfound.com "React" OR "Frontend" remote'
+    enabled: true
+
+  - name: Wellfound — Full Stack Fintech
+    query: 'site:wellfound.com "Full Stack" fintech remote'
+    enabled: true
+
+  # -- FINTECH SPECIFIC --
+
+  - name: Ashby — Fintech React
+    query: 'site:jobs.ashbyhq.com fintech "React" OR "Frontend" OR "Full Stack"'
+    enabled: true
+
+  - name: Greenhouse — Fintech Engineer
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io fintech "Software Engineer" OR "Frontend"'
+    enabled: true
+
+  - name: Lever — Payments React
+    query: 'site:jobs.lever.co payments "React" OR "Node.js" OR "TypeScript"'
+    enabled: true
+
+  - name: Greenhouse — Payments Full Stack
+    query: 'site:boards.greenhouse.io payments "Full Stack" OR "Software Engineer"'
+    enabled: true
+
+  # -- EUROPEAN VISA SPONSORS --
+
+  - name: Greenhouse — React Berlin Relocation
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "React" OR "Frontend" Berlin relocation OR "visa sponsorship"'
+    enabled: true
+
+  - name: Ashby — Full Stack Amsterdam
+    query: 'site:jobs.ashbyhq.com "Full Stack" OR "Software Engineer" Amsterdam OR Netherlands relocation'
+    enabled: true
+
+  - name: Lever — Frontend London Visa
+    query: 'site:jobs.lever.co "Frontend" OR "React" London "visa sponsorship"'
+    enabled: true
+
+  - name: Greenhouse — Node.js Germany
+    query: 'site:boards.greenhouse.io "Node.js" OR "TypeScript" Germany relocation'
+    enabled: true
+
+  # -- LARAVEL / PHP SPECIFIC --
+
+  - name: Ashby — Laravel Remote
+    query: 'site:jobs.ashbyhq.com "Laravel" OR "PHP" remote senior'
+    enabled: true
+
+  - name: Greenhouse — Laravel
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "Laravel" OR "PHP Developer"'
+    enabled: true
+
+  - name: Lever — PHP Laravel
+    query: 'site:jobs.lever.co "Laravel" OR "PHP" senior'
+    enabled: true
+
+  # -- REMOTE JOB BOARDS --
+
+  - name: WeWorkRemotely — React
+    query: 'site:weworkremotely.com "React" OR "Frontend"'
+    enabled: true
+
+  - name: WeWorkRemotely — Full Stack
+    query: 'site:weworkremotely.com "Full Stack" OR "Node.js"'
+    enabled: true
+
+  - name: RemoteOK — React
+    query: 'site:remoteok.com "React" OR "Frontend" OR "TypeScript"'
+    enabled: true
+
+  - name: RemoteFront — Frontend
+    query: 'site:remotefront.com "React" OR "Frontend" OR "Full Stack" remote'
+    enabled: true
+
+# -- Tracked companies --
+# Companies whose career pages are checked directly.
+# scan_method: playwright (default), websearch, greenhouse_api
+# For Greenhouse companies, add api: field for faster structured JSON access.
+
+tracked_companies:
+
+  # ==========================================================================
+  # SAUDI ARABIA - FINTECH & TECH (PRIORITY)
+  # ==========================================================================
+
+  - name: Tamara
+    careers_url: https://www.tamara.co/careers
+    scan_method: websearch
+    scan_query: 'site:tamara.co/careers OR "tamara" "engineer" OR "developer" site:job-boards.greenhouse.io'
+    notes: "Riyadh. Saudi fintech unicorn, BNPL leader. Visa sponsorship."
+    enabled: true
+
+  - name: Tabby
+    careers_url: https://tabby.ai/en/careers
+    scan_method: websearch
+    scan_query: '"tabby" careers "engineer" OR "developer" site:job-boards.greenhouse.io OR site:jobs.lever.co'
+    notes: "Dubai/Riyadh. BNPL fintech unicorn. UAE + Saudi operations."
+    enabled: true
+
+  - name: Lean Technologies
+    careers_url: https://www.leantech.me/careers
+    scan_method: websearch
+    scan_query: '"lean technologies" OR "leantech" careers "engineer" site:job-boards.greenhouse.io'
+    notes: "Riyadh. Open banking API platform. Strong engineering culture."
+    enabled: true
+
+  - name: Foodics
+    careers_url: https://www.foodics.com/careers
+    scan_method: websearch
+    scan_query: 'site:foodics.com/careers OR "foodics" "engineer" site:job-boards.greenhouse.io'
+    notes: "Riyadh. Restaurant tech/fintech. POS + payments."
+    enabled: true
+
+  - name: HyperPay
+    careers_url: https://www.hyperpay.com/careers
+    scan_method: websearch
+    scan_query: '"hyperpay" careers "developer" OR "engineer"'
+    notes: "Riyadh. Payment gateway leader in MENA."
+    enabled: true
+
+  - name: Geidea
+    careers_url: https://www.geidea.net/en/careers
+    scan_method: websearch
+    scan_query: '"geidea" careers "software" OR "engineer"'
+    notes: "Riyadh. Payment technology. $160M raised."
+    enabled: true
+
+  - name: HungerStation
+    careers_url: https://job-boards.greenhouse.io/hungerstation
+    api: https://boards-api.greenhouse.io/v1/boards/hungerstation/jobs
+    notes: "Riyadh. Delivery Hero group. Directly relevant to fintech + food-tech experience."
+    enabled: true
+
+  - name: Jahez
+    careers_url: https://www.jahez.net/careers
+    scan_method: websearch
+    scan_query: '"jahez" careers "developer" OR "engineer"'
+    notes: "Riyadh. Food delivery. IPO'd company."
+    enabled: true
+
+  - name: STC Pay
+    careers_url: https://www.stcpay.com.sa/careers
+    scan_method: websearch
+    scan_query: '"stc pay" OR "stcpay" careers "developer" OR "engineer"'
+    notes: "Riyadh. Saudi telecom fintech."
+    enabled: true
+
+  - name: Salla
+    careers_url: https://salla.com/careers
+    scan_method: websearch
+    scan_query: '"salla" careers "developer" OR "react" OR "frontend"'
+    notes: "Riyadh. Arabic e-commerce platform. React/Laravel stack."
+    enabled: true
+
+  - name: Moyasar
+    careers_url: https://moyasar.com/careers
+    scan_method: websearch
+    scan_query: '"moyasar" careers "engineer" OR "developer"'
+    notes: "Riyadh. Payment gateway for Saudi market."
+    enabled: true
+
+  # -- Saudi Tech Giants --
+
+  - name: NEOM
+    careers_url: https://www.neom.com/en-us/careers
+    scan_method: websearch
+    scan_query: 'site:neom.com/careers "software" OR "developer" OR "engineer"'
+    notes: "Riyadh/NEOM. $500B mega project. Tech roles."
+    enabled: true
+
+  - name: Elm
+    careers_url: https://www.elm.sa/en/careers
+    scan_method: websearch
+    scan_query: '"elm" Saudi careers "developer" OR "software"'
+    notes: "Riyadh. Digital solutions, government tech."
+    enabled: true
+
+  # ==========================================================================
+  # UAE / GCC
+  # ==========================================================================
+
+  - name: Careem
+    careers_url: https://job-boards.greenhouse.io/caraborneio
+    api: https://boards-api.greenhouse.io/v1/boards/caraborneio/jobs
+    notes: "Dubai. Super app. Uber acquisition."
+    enabled: true
+
+  - name: Talabat
+    careers_url: https://job-boards.greenhouse.io/talabat
+    api: https://boards-api.greenhouse.io/v1/boards/talabat/jobs
+    notes: "Dubai. Delivery Hero. Food delivery."
+    enabled: true
+
+  - name: Network International
+    careers_url: https://www.network.ae/en/careers
+    scan_method: websearch
+    scan_query: '"network international" careers "developer" OR "engineer"'
+    notes: "Dubai. Payment solutions. MENA leader."
+    enabled: true
+
+  - name: Checkout.com
+    careers_url: https://www.checkout.com/careers
+    scan_method: websearch
+    scan_query: 'site:checkout.com/careers "engineer" OR "developer" Dubai OR "Middle East"'
+    notes: "Dubai office. Payment processing unicorn."
+    enabled: true
+
+  # ==========================================================================
+  # GLOBAL FINTECH - REMOTE FRIENDLY
+  # ==========================================================================
+
+  - name: Stripe
+    careers_url: https://stripe.com/jobs
+    scan_method: websearch
+    scan_query: 'site:stripe.com/jobs "Frontend" OR "Full Stack" OR "Software Engineer" remote'
+    notes: "Remote. Payments infrastructure leader."
+    enabled: true
+
+  - name: Wise
+    careers_url: https://www.wise.com/careers
+    scan_method: websearch
+    scan_query: 'site:wise.com/careers "engineer" OR "developer" remote'
+    notes: "Remote/London. International transfers."
+    enabled: true
+
+  - name: Revolut
+    careers_url: https://www.revolut.com/careers
+    scan_method: websearch
+    scan_query: 'site:revolut.com/careers "engineer" OR "developer"'
+    notes: "Remote/London. Digital banking super app."
+    enabled: true
+
+  - name: Adyen
+    careers_url: https://careers.adyen.com
+    scan_method: websearch
+    scan_query: 'site:careers.adyen.com "engineer" OR "developer"'
+    notes: "Amsterdam. Payment platform. Visa sponsor."
+    enabled: true
+
+  - name: Mollie
+    careers_url: https://www.mollie.com/careers
+    scan_method: websearch
+    scan_query: 'site:mollie.com/careers "engineer" OR "developer"'
+    notes: "Amsterdam. European payments. Visa sponsor."
+    enabled: true
+
+  - name: Klarna
+    careers_url: https://www.klarna.com/careers
+    scan_method: websearch
+    scan_query: 'site:klarna.com/careers "engineer" OR "developer" remote'
+    notes: "Stockholm. BNPL leader. Visa sponsor."
+    enabled: true
+
+  - name: Payoneer
+    careers_url: https://www.payoneer.com/careers
+    scan_method: websearch
+    scan_query: 'site:payoneer.com/careers "engineer" OR "developer"'
+    notes: "Remote. Cross-border payments."
+    enabled: true
+
+  # ==========================================================================
+  # REACT / FRONTEND FOCUSED PLATFORMS
+  # ==========================================================================
+
+  - name: Vercel
+    careers_url: https://job-boards.greenhouse.io/vercel
+    api: https://boards-api.greenhouse.io/v1/boards/vercel/jobs
+    notes: "Remote-first. Next.js creators. React expertise highly valued."
+    enabled: true
+
+  - name: Netlify
+    careers_url: https://job-boards.greenhouse.io/netlify
+    api: https://boards-api.greenhouse.io/v1/boards/netlify/jobs
+    notes: "Remote. Web platform. Frontend focus."
+    enabled: true
+
+  - name: Supabase
+    careers_url: https://supabase.com/careers
+    scan_method: websearch
+    scan_query: 'site:supabase.com/careers "engineer" OR "developer"'
+    notes: "Remote. Open source Firebase alternative."
+    enabled: true
+
+  - name: PlanetScale
+    careers_url: https://planetscale.com/careers
+    scan_method: websearch
+    scan_query: 'site:planetscale.com/careers "engineer" OR "developer"'
+    notes: "Remote. Database platform."
+    enabled: true
+
+  - name: Railway
+    careers_url: https://railway.app/careers
+    scan_method: websearch
+    scan_query: 'site:railway.app/careers "engineer"'
+    notes: "Remote. Deployment platform."
+    enabled: true
+
+  - name: Retool
+    careers_url: https://retool.com/careers
+    scan_method: websearch
+    scan_query: 'site:retool.com/careers "engineer" OR "developer"'
+    notes: "SF/London. Internal tools builder. React heavy."
+    enabled: true
+
+  - name: Webflow
+    careers_url: https://job-boards.greenhouse.io/webflow
+    api: https://boards-api.greenhouse.io/v1/boards/webflow/jobs
+    notes: "Remote. Visual web development."
+    enabled: true
+
+  - name: Linear
+    careers_url: https://linear.app/careers
+    scan_method: websearch
+    scan_query: 'site:linear.app/careers "engineer"'
+    notes: "Remote. Project management. Beautiful React UI."
+    enabled: true
+
+  - name: Notion
+    careers_url: https://www.notion.so/careers
+    scan_method: websearch
+    scan_query: 'site:notion.so/careers "engineer" OR "developer"'
+    notes: "SF/Remote. Productivity platform."
+    enabled: true
+
+  - name: Figma
+    careers_url: https://www.figma.com/careers
+    scan_method: websearch
+    scan_query: 'site:figma.com/careers "engineer" OR "developer"'
+    notes: "SF/London. Design tools."
+    enabled: true
+
+  # ==========================================================================
+  # E-COMMERCE & SAAS
+  # ==========================================================================
+
+  - name: Shopify
+    careers_url: https://www.shopify.com/careers
+    scan_method: websearch
+    scan_query: 'site:shopify.com/careers "engineer" OR "developer" remote'
+    notes: "Remote. E-commerce platform leader."
+    enabled: true
+
+  - name: BigCommerce
+    careers_url: https://www.bigcommerce.com/careers
+    scan_method: websearch
+    scan_query: 'site:bigcommerce.com/careers "engineer" OR "developer"'
+    notes: "Remote. E-commerce SaaS."
+    enabled: true
+
+  - name: Airtable
+    careers_url: https://job-boards.greenhouse.io/airtable
+    api: https://boards-api.greenhouse.io/v1/boards/airtable/jobs
+    notes: "SF/Remote. No-code database platform."
+    enabled: true
+
+  # ==========================================================================
+  # EUROPEAN COMPANIES - VISA SPONSORS
+  # ==========================================================================
+
+  - name: N26
+    careers_url: https://job-boards.greenhouse.io/n26
+    api: https://boards-api.greenhouse.io/v1/boards/n26/jobs
+    notes: "Berlin. Mobile bank. Visa sponsor."
+    enabled: true
+
+  - name: Trade Republic
+    careers_url: https://job-boards.greenhouse.io/traderepublicbank
+    api: https://boards-api.greenhouse.io/v1/boards/traderepublicbank/jobs
+    notes: "Berlin. Neobroker. Visa sponsor."
+    enabled: true
+
+  - name: SumUp
+    careers_url: https://job-boards.greenhouse.io/sumup
+    api: https://boards-api.greenhouse.io/v1/boards/sumup/jobs
+    notes: "Berlin/London. Payments fintech. Visa sponsor."
+    enabled: true
+
+  - name: Qonto
+    careers_url: https://jobs.lever.co/qonto
+    notes: "Paris/Berlin. SMB neobank. Visa sponsor."
+    enabled: true
+
+  - name: Monzo
+    careers_url: https://monzo.com/careers
+    scan_method: websearch
+    scan_query: 'site:monzo.com/careers "engineer" OR "developer"'
+    notes: "London. Digital bank. Visa sponsor."
+    enabled: true
+
+  - name: Starling Bank
+    careers_url: https://www.starlingbank.com/careers
+    scan_method: websearch
+    scan_query: 'site:starlingbank.com/careers "engineer" OR "developer"'
+    notes: "London. Digital bank. Visa sponsor."
+    enabled: true
+
+  - name: Contentful
+    careers_url: https://job-boards.greenhouse.io/contentful
+    api: https://boards-api.greenhouse.io/v1/boards/contentful/jobs
+    notes: "Berlin. Headless CMS. Visa sponsor."
+    enabled: true
+
+  - name: GetYourGuide
+    careers_url: https://job-boards.greenhouse.io/getyourguide
+    api: https://boards-api.greenhouse.io/v1/boards/getyourguide/jobs
+    notes: "Berlin. Travel marketplace. Visa sponsor."
+    enabled: true
+
+  - name: HelloFresh
+    careers_url: https://job-boards.greenhouse.io/hellofresh
+    api: https://boards-api.greenhouse.io/v1/boards/hellofresh/jobs
+    notes: "Berlin. Meal kit. Large engineering org."
+    enabled: true
+
+  - name: Factorial
+    careers_url: https://job-boards.greenhouse.io/factorial
+    api: https://boards-api.greenhouse.io/v1/boards/factorial/jobs
+    notes: "Barcelona. HR SaaS unicorn."
+    enabled: true
+
+  - name: Travelperk
+    careers_url: https://jobs.ashbyhq.com/travelperk
+    scan_method: websearch
+    scan_query: 'site:jobs.ashbyhq.com/travelperk'
+    notes: "Barcelona. Business travel unicorn."
+    enabled: true
+
+  # ==========================================================================
+  # AUTOMATION & NO-CODE
+  # ==========================================================================
+
+  - name: n8n
+    careers_url: https://jobs.ashbyhq.com/n8n
+    scan_method: websearch
+    scan_query: 'site:jobs.ashbyhq.com/n8n'
+    notes: "Berlin + remote. Workflow automation. Node.js heavy."
+    enabled: true
+
+  - name: Zapier
+    careers_url: https://jobs.ashbyhq.com/zapier
+    scan_method: websearch
+    scan_query: 'site:jobs.ashbyhq.com/zapier'
+    notes: "Remote-first. Automation platform leader."
+    enabled: true
+
+  - name: Make.com
+    careers_url: https://www.make.com/en/careers
+    scan_method: websearch
+    scan_query: 'site:make.com/en/careers "engineer" OR "developer"'
+    notes: "Remote. Automation platform (ex-Integromat)."
+    enabled: true
+
+  # ==========================================================================
+  # UK TECH - VISA SPONSORS
+  # ==========================================================================
+
+  - name: Deliveroo
+    careers_url: https://job-boards.greenhouse.io/deliveroo
+    api: https://boards-api.greenhouse.io/v1/boards/deliveroo/jobs
+    notes: "London. Food delivery. Food-tech experience relevant."
+    enabled: true
+
+  - name: GoCardless
+    careers_url: https://job-boards.greenhouse.io/gocardless
+    api: https://boards-api.greenhouse.io/v1/boards/gocardless/jobs
+    notes: "London. Payment infrastructure. Fintech."
+    enabled: true
+
+  - name: Paddle
+    careers_url: https://job-boards.greenhouse.io/paddle
+    api: https://boards-api.greenhouse.io/v1/boards/paddle/jobs
+    notes: "London. Payment infrastructure for SaaS."
+    enabled: true
+
+  - name: Checkout.com UK
+    careers_url: https://job-boards.greenhouse.io/checkout
+    api: https://boards-api.greenhouse.io/v1/boards/checkout/jobs
+    notes: "London. Payment processing unicorn."
+    enabled: true
+
+  # ==========================================================================
+  # CANADIAN COMPANIES - VISA SPONSORS
+  # ==========================================================================
+
+  - name: Wealthsimple
+    careers_url: https://job-boards.greenhouse.io/wealthsimple
+    api: https://boards-api.greenhouse.io/v1/boards/wealthsimple/jobs
+    notes: "Toronto. Fintech. Canadian visa sponsor."
+    enabled: true
+
+  - name: Interac
+    careers_url: https://www.interac.ca/en/careers
+    scan_method: websearch
+    scan_query: 'site:interac.ca/careers "developer" OR "engineer"'
+    notes: "Toronto. Canadian payment network."
+    enabled: true

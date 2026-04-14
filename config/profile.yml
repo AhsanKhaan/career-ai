@@ -1,0 +1,90 @@
+# Career-Ops Profile Configuration
+# Copy this file to config/profile.yml and fill in your details.
+# This is the single source of truth for your personal data across all modes.
+
+candidate:
+  full_name: "Ahsan Khan"
+  email: "ahsankhan.ubit@gmail.com"
+  phone: "+92-336-1809930"
+  location: "Karachi, Pakistan"
+  linkedin: "linkedin.com/in/ahsankhaan"
+  portfolio_url: "https://ahsankhaan.vercel.app"
+  github: "github.com/AhsanKhaan"
+  # twitter: "https://x.com/ahsankhaan"
+  # (Optional) Canva resume design ID for visual CV generation via /career-ops pdf.
+  # Find it in your Canva design URL: https://www.canva.com/design/DAxxxxxxx/...
+  # The ID starts with "D" and is 11 characters long.
+  # canva_resume_design_id: "DAxxxxxxxxx"
+
+target_roles:
+  # Your North Star roles — what you're optimizing for
+  primary:
+    - "Senior Software Engineer"
+    - "Senior Frontend Engineer"
+    - "Full Stack Developer"
+    - "React Developer"
+  # Archetypes help the evaluation system score fit
+  archetypes:
+    - name: "Senior Frontend Engineer"
+      level: "Senior/Lead"
+      fit: "primary"        # primary = dream role, secondary = good fit, adjacent = stretch
+    - name: "Full Stack Developer"
+      level: "Senior"
+      fit: "primary"
+    - name: "MERN Stack Developer"
+      level: "Senior"
+      fit: "primary"
+    - name: "PHP/Laravel Developer"
+      level: "Senior"
+      fit: "secondary"
+    - name: "Node.js Developer"
+      level: "Mid-Senior"
+      fit: "secondary"
+    - name: "Frontend Tech Lead"
+      level: "Lead"
+      fit: "adjacent"
+
+narrative:
+  # Your professional headline (1 line)
+  headline: "Senior Full Stack Engineer | 5+ Years Fintech | React, Node.js, Laravel"
+  # Your exit story — what makes you unique
+  exit_story: "Built frontend systems serving 100K+ users at a leading fintech. Architected automation that cut merchant onboarding from 5 days to 24 hours. Ready for platform-scale impact."
+  # Your top 3-5 superpowers
+  superpowers:
+    - "Frontend architecture at scale (100K+ users)"
+    - "Performance optimization (35% load time reduction)"
+    - "Workflow automation (80% manual ops eliminated)"
+    - "Security hardening (PCI DSS, OWASP compliance)"
+    - "Team mentorship & code reviews"
+  # Proof points — projects, articles, case studies with measurable impact
+  proof_points:
+    - name: "Nayapay Admin Portal"
+      url: "https://ahsankhaan.vercel.app"
+      hero_metric: "Enterprise dashboard serving 100K+ fintech users"
+    - name: "Merchant Onboarding Automation"
+      url: "https://ahsankhaan.vercel.app"
+      hero_metric: "Reduced onboarding 5 days → 24 hours (80% faster)"
+    - name: "Component Library"
+      url: "https://github.com/AhsanKhaan"
+      hero_metric: "50+ components, 60% faster UI development"
+    - name: "Lendotics CRM"
+      url: "https://ahsankhaan.vercel.app"
+      hero_metric: "US fintech MVP delivered 2 weeks early"
+  # Optional: dashboard/demo URL with credentials
+  # dashboard:
+  #   url: "https://ahsankhaan.vercel.app/demo"
+  #   password: "demo-2026"
+
+compensation:
+  target_range: "$5,000-$7,000/month"     # Your target total comp
+  currency: "USD"
+  minimum: "$3,000/month"                  # Walk-away number
+  location_flexibility: "Remote preferred, or onsite in Saudi Arabia (Riyadh) with visa sponsorship"
+
+location:
+  country: "Pakistan"
+  city: "Karachi"
+  timezone: "PKT (UTC+5)"
+  visa_status: "Requires sponsorship"
+  # For remote roles outside your country:
+  onsite_availability: "Immediate relocation to Riyadh with visa sponsorship, or fully remote"

@@ -15,9 +15,13 @@ OpenClaw rules maintained:
 
 from __future__ import annotations
 
+import glob
 import json
+import os
 import re
+import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from career_ai.ai.prompts import load_prompt
@@ -27,6 +31,59 @@ _CLIENT: "CareerAIClient | None" = None
 _BATCH_SIZE = 20  # Jobs per scoring call
 _CTX_FILE = Path("batch/.profile-context.md")
 _TIMEOUT = 180  # seconds per claude -p call
+_CLAUDE_EXE: str | None = None  # resolved once, cached
+
+
+def _find_claude() -> str:
+    """Locate the claude CLI executable.
+
+    Search order:
+    1. shutil.which("claude") — finds it if it's on PATH
+    2. Windows UWP package install location (Claude Desktop app)
+    3. Common manual install locations (~/.local/bin, /usr/local/bin)
+
+    Raises RuntimeError with install instructions if not found.
+    """
+    global _CLAUDE_EXE
+    if _CLAUDE_EXE is not None:
+        return _CLAUDE_EXE
+
+    # 1. Standard PATH lookup (works if the user's shell PATH is inherited)
+    found = shutil.which("claude")
+    if found:
+        _CLAUDE_EXE = found
+        return _CLAUDE_EXE
+
+    # 2. Windows: Claude Desktop installs to a versioned UWP package path
+    if sys.platform == "win32":
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        if local_app_data:
+            pattern = os.path.join(
+                local_app_data,
+                "Packages", "Claude_*",
+                "LocalCache", "Roaming", "Claude", "claude-code",
+                "*", "claude.exe",
+            )
+            matches = sorted(glob.glob(pattern), reverse=True)  # newest version first
+            if matches:
+                _CLAUDE_EXE = matches[0]
+                return _CLAUDE_EXE
+
+    # 3. Common Unix locations not always on PATH
+    for candidate in [
+        Path.home() / ".local" / "bin" / "claude",
+        Path("/usr/local/bin/claude"),
+        Path("/opt/homebrew/bin/claude"),
+    ]:
+        if candidate.is_file():
+            _CLAUDE_EXE = str(candidate)
+            return _CLAUDE_EXE
+
+    raise RuntimeError(
+        "claude CLI not found. Install it from https://claude.ai/download\n"
+        "Then log in: claude login\n"
+        "If already installed, ensure its directory is on your PATH."
+    )
 
 
 class CareerAIClient:
@@ -48,9 +105,10 @@ class CareerAIClient:
         Equivalent to career-ops:
           claude -p --dangerously-skip-permissions --append-system-prompt-file profile.md "prompt"
         """
+        claude_exe = _find_claude()
         result = subprocess.run(
             [
-                "claude", "-p",
+                claude_exe, "-p",
                 "--dangerously-skip-permissions",
                 "--append-system-prompt-file", str(_CTX_FILE),
                 user_prompt,

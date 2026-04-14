@@ -44,10 +44,15 @@ def run_batch(
         raise SystemExit(1)
 
     # Check that claude CLI is available
-    result = subprocess.run(["claude", "--version"], capture_output=True, text=True)
+    from career_ai.ai.client import _find_claude
+    try:
+        claude_exe = _find_claude()
+    except RuntimeError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise SystemExit(1) from exc
+    result = subprocess.run([claude_exe, "--version"], capture_output=True, text=True)
     if result.returncode != 0:
-        console.print("[red]claude CLI not found or not logged in.[/red]")
-        console.print("[yellow]Install: https://claude.ai/download  then run: claude login[/yellow]")
+        console.print("[red]claude CLI found but failed to run. Try: claude login[/red]")
         raise SystemExit(1)
 
     # Ensure profile context file exists

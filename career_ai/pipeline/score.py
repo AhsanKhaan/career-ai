@@ -36,7 +36,7 @@ def run_score() -> None:
     console.print(f"[bold]Scoring {len(to_score)} jobs...[/bold]")
 
     client = get_claude_client()
-    batches = _chunked(to_score, _BATCH_SIZE)
+    batches = list(_chunked(to_score, _BATCH_SIZE))
     scored_results: list[dict] = []
 
     with Progress(SpinnerColumn(), TextColumn("{task.description}"), console=console) as progress:

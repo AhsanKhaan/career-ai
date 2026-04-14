@@ -17,7 +17,13 @@
       "Bash(py -m pip install pytest pytest-asyncio pytest-httpx)",
       "Bash(py -m pip install pytest)",
       "Bash(py -m pytest tests/test_scoring.py -v --tb=long)",
-      "Bash(py -m pytest tests/ -v --tb=short --ignore=tests/test_scrapers.py)"
+      "Bash(py -m pytest tests/ -v --tb=short --ignore=tests/test_scrapers.py)",
+      "Bash(career scan:*)",
+      "Read(//c/Users/Ahsan Khan/AppData/Local/Programs/Python//**)",
+      "Bash(ls /c/Python*)",
+      "Read(//c/Users/Ahsan Khan/AppData/Local/Programs//**)",
+      "Bash(PYTHONUTF8=1 PATH=\"$SCRIPTS:$PATH\" career score:*)",
+      "Bash(PYTHONUTF8=1 PATH=\"$CLAUDE_DIR:$SCRIPTS:$PATH\" career score:*)"
     ]
   }
 }
