@@ -29,7 +29,7 @@ from career_ai.models import Job
 
 _CLIENT: "CareerAIClient | None" = None
 _BATCH_SIZE = 20  # Jobs per scoring call
-_CTX_FILE = Path("batch/.profile-context.md")
+_CTX_FILE = Path("batch/profile-context.md")
 _TIMEOUT = 180  # seconds per claude -p call
 _CLAUDE_EXE: str | None = None  # resolved once, cached
 
@@ -48,13 +48,9 @@ def _find_claude() -> str:
     if _CLAUDE_EXE is not None:
         return _CLAUDE_EXE
 
-    # 1. Standard PATH lookup (works if the user's shell PATH is inherited)
-    found = shutil.which("claude")
-    if found:
-        _CLAUDE_EXE = found
-        return _CLAUDE_EXE
-
-    # 2. Windows: Claude Desktop installs to a versioned UWP package path
+    # 1. Windows: Claude Desktop (UWP) installs to a versioned package path.
+    #    Check this first — ~/.local/bin may contain an unrelated API-key-based
+    #    CLI that returns "Invalid API key" and causes confusing failures.
     if sys.platform == "win32":
         local_app_data = os.environ.get("LOCALAPPDATA", "")
         if local_app_data:
@@ -68,6 +64,12 @@ def _find_claude() -> str:
             if matches:
                 _CLAUDE_EXE = matches[0]
                 return _CLAUDE_EXE
+
+    # 2. Standard PATH lookup (Unix, or Windows if UWP not found)
+    found = shutil.which("claude")
+    if found:
+        _CLAUDE_EXE = found
+        return _CLAUDE_EXE
 
     # 3. Common Unix locations not always on PATH
     for candidate in [
@@ -104,26 +106,40 @@ class CareerAIClient:
 
         Equivalent to career-ops:
           claude -p --dangerously-skip-permissions --append-system-prompt-file profile.md "prompt"
+
+        The prompt is piped via stdin to avoid Windows command-line length limits and
+        shell encoding issues with large, multi-line prompts containing special characters.
         """
         claude_exe = _find_claude()
+
+        # Pass the prompt via stdin (claude -p reads from stdin when no positional arg given).
+        # This avoids Windows 32KB command-line arg limit and CP1252 quoting issues.
+        # PYTHONUTF8=1 ensures the subprocess decodes/encodes everything as UTF-8.
+        env = {**os.environ, "PYTHONUTF8": "1"}
         result = subprocess.run(
             [
                 claude_exe, "-p",
                 "--dangerously-skip-permissions",
                 "--append-system-prompt-file", str(_CTX_FILE),
-                user_prompt,
             ],
+            input=user_prompt,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             timeout=_TIMEOUT,
             cwd=str(Path.cwd()),  # Project root → CLAUDE.md loaded as context
+            env=env,
         )
         if result.returncode != 0:
-            stderr = result.stderr[:300] if result.stderr else "(no stderr)"
+            stderr = result.stderr[:500] if result.stderr else "(no stderr)"
+            stdout = result.stdout[:200] if result.stdout else "(no stdout)"
             raise RuntimeError(
                 f"claude CLI exited with code {result.returncode}.\n"
-                f"Is 'claude' installed and logged in? Run: claude login\n"
-                f"stderr: {stderr}"
+                f"exe: {claude_exe}\n"
+                f"ctx_file: {str(_CTX_FILE)} (exists: {_CTX_FILE.exists()})\n"
+                f"cwd: {str(Path.cwd())}\n"
+                f"stderr: {stderr}\n"
+                f"stdout: {stdout}"
             )
         return result.stdout.strip()
 

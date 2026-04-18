@@ -50,7 +50,7 @@ def run_batch(
     except RuntimeError as exc:
         console.print(f"[red]{exc}[/red]")
         raise SystemExit(1) from exc
-    result = subprocess.run([claude_exe, "--version"], capture_output=True, text=True)
+    result = subprocess.run([claude_exe, "--version"], capture_output=True, text=True, encoding="utf-8")
     if result.returncode != 0:
         console.print("[red]claude CLI found but failed to run. Try: claude login[/red]")
         raise SystemExit(1)
@@ -133,7 +133,16 @@ def merge_tracker_additions(tracker_dir: str | None = None) -> int:
         # Upsert in SQLite tracker if we have application materials
         job = find_job(job_id)
         if job and data.get("ats_summary"):
-            tracker.upsert_application(job, ApplicationStatus.APPLIED)
+            from datetime import datetime, timezone
+            from career_ai.models import Application
+            tracker.upsert_application(Application(
+                job_id=job.job_id,
+                company=job.company,
+                title=job.title,
+                status=ApplicationStatus.APPLIED,
+                score=job.score,
+                applied_at=datetime.now(timezone.utc).isoformat(),
+            ))
 
         merged += 1
         console.print(f"[green]Merged {job_id} (score={data.get('score', '?')})[/green]")

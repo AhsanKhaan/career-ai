@@ -11,6 +11,7 @@ Two-call strategy:
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from typing import Callable
 
@@ -36,7 +37,7 @@ class AshbyScraper(BaseScraper):
                 resp = await client.get(list_url)
                 resp.raise_for_status()
                 data = resp.json()
-        except httpx.HTTPError:
+        except (httpx.HTTPError, json.JSONDecodeError, ValueError):
             return []
 
         raw_jobs = data.get("jobs", [])
@@ -73,7 +74,7 @@ class AshbyScraper(BaseScraper):
                             html = detail.get("descriptionHtml", "")
                             description = self._strip_html(html)[:8000]
                             requirements = self._extract_requirements(html)
-                    except httpx.HTTPError:
+                    except (httpx.HTTPError, json.JSONDecodeError, ValueError):
                         pass
 
                 jobs.append(
