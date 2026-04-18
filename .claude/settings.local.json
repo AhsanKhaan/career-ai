@@ -39,7 +39,20 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
-      "Bash(gh pr create --base main --head fix/claude-cli-hardening-self-heal --title 'Harden claude CLI client and remove API key remnants' --body ':*)"
+      "Bash(gh pr create --base main --head fix/claude-cli-hardening-self-heal --title 'Harden claude CLI client and remove API key remnants' --body ':*)",
+      "Bash(py -m pip install \"python-docx>=1.1\" \"beautifulsoup4>=4.12\")",
+      "Bash(py -m pytest tests/test_resume_renderer.py tests/test_applylink.py -v --tb=short)",
+      "Bash(py -m pytest tests/ --ignore=tests/test_scrapers.py -q --tb=short)",
+      "Bash(py -c \"from career_ai.resume.renderer import render_docx; p = render_docx\\({'name':'Smoke Test','contact':{'email':'t@t','phone':'x','location':'NYC','links':['linkedin.com/in/t']},'summary':'Senior.','experience':[{'company':'X','title':'Y','dates':'2020-2024','bullets':['did thing','did other thing']}],'skills':['Python','Go'],'education':[]}, 'output/_smoke.docx'\\); print\\('wrote', p, p.stat\\(\\).st_size, 'bytes'\\)\")",
+      "Bash(py -m career_ai.cli --help)",
+      "Bash(career --help)",
+      "Bash(py -c \"from career_ai.cli import app; import typer; from typer.testing import CliRunner; r = CliRunner\\(\\); result = r.invoke\\(app, ['--help']\\); print\\(result.output\\)\")",
+      "Bash(powershell.exe -Command \"Get-Command gh -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files','C:\\\\Users\\\\Ahsan Khan\\\\AppData\\\\Local\\\\Programs' -Filter gh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 3 -ExpandProperty FullName\")",
+      "Bash(git fetch:*)",
+      "Bash(command -v gh)",
+      "Bash(powershell.exe -NoProfile -Command \"\\(Get-Command gh -ErrorAction SilentlyContinue\\).Source\")",
+      "Bash(env)"
     ]
   }
 }
