@@ -25,6 +25,7 @@ scan (zero-token) → score → apply → track
 | `career scan` | Discover new jobs from portals.yml, deduplicate, cache | **$0** |
 | `career score` | Score unscored jobs 0–100 against your profile | claude CLI (batched 20/call) |
 | `career apply <job_id>` | Generate ATS summary, cover letter, keywords | claude CLI (1 call) |
+| `career applylink <url>` | **One-shot**: paste a job URL → fetches JD, tailors an ATS résumé (DOCX+PDF), fills the form, pauses before submit | claude CLI (3 calls) |
 | `career batch` | Run batch workers via parallel claude -p processes | claude CLI |
 | `career auto` | Full automated pipeline: scan → score → apply all strong matches | claude CLI |
 | `career autoapply <job_id>` | Playwright form fill — pauses before submit, you confirm | None until you confirm |
@@ -40,6 +41,9 @@ scan (zero-token) → score → apply → track
 | `data/career-ai.db` | SQLite application tracker | System |
 | `prompts/score.md` | Scoring prompt template | System |
 | `prompts/apply.md` | Application generation prompt template | System |
+| `prompts/extract_jd.md` | URL → JD extraction prompt (used by `applylink`) | System |
+| `prompts/resume.md` | Résumé tailoring prompt (used by `applylink`) | System |
+| `output/resume-<job_id>.docx/.pdf` | Per-job tailored résumé produced by `applylink` | System |
 
 ## Data Contract
 
@@ -72,6 +76,7 @@ cp config/portals.example.yml config/portals.yml   # customize companies
 career scan       # discover jobs (free)
 career score      # score with AI (uses claude CLI)
 career apply abc123def456   # generate application for a job_id
+career applylink https://jobs.lever.co/<company>/<posting-id>   # one-shot: URL → résumé → fill form → pause to submit
 career auto       # full automated pipeline: scan → score → apply all strong matches
 career track      # view status table
 ```

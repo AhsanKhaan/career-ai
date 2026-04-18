@@ -70,6 +70,31 @@ def autoapply(
 
 
 @app.command()
+def applylink(
+    url: str = typer.Argument(..., help="Full URL of a single job posting"),
+) -> None:
+    """Paste a job URL → auto-fetches JD, tailors a résumé, fills the form, pauses before submit.
+
+    One-shot alternative to scan → score → apply → autoapply. Does NOT
+    require 'career scan' to have run first.
+
+    Steps (all automatic until step 5):
+      1. Fetches the posting via claude WebFetch
+      2. Generates ATS summary + cover letter + keywords
+      3. Tailors a résumé → output/resume-<job_id>.docx + .pdf
+      4. Records in SQLite tracker (status=scored)
+      5. If Greenhouse/Lever/Ashby, opens the browser and fills the form;
+         browser pauses so you can review, then press Enter to submit.
+
+    Examples:
+      career applylink https://jobs.lever.co/acme/abc123
+      career applylink https://job-boards.greenhouse.io/widgets/jobs/456
+    """
+    from career_ai.pipeline.applylink import run_applylink
+    run_applylink(url)
+
+
+@app.command()
 def track() -> None:
     """Show application status table. Zero AI cost."""
     from career_ai.pipeline.track import run_track

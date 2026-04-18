@@ -16,7 +16,12 @@ console = Console()
 
 
 class GreenhouseFormHandler:
-    async def fill_and_pause(self, job: Job, profile: dict) -> None:
+    async def fill_and_pause(
+        self,
+        job: Job,
+        profile: dict,
+        resume_pdf: Path | None = None,
+    ) -> None:
         from playwright.async_api import async_playwright
 
         candidate = profile.get("candidate", {})
@@ -26,7 +31,7 @@ class GreenhouseFormHandler:
         email = candidate.get("email", "")
         phone = candidate.get("phone", "")
 
-        resume_path = _find_resume()
+        resume_path = resume_pdf if resume_pdf and Path(resume_pdf).exists() else _find_resume()
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=False)  # visible so user can review

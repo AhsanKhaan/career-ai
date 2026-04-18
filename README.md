@@ -21,6 +21,7 @@ career auto   (all stages in one command)
 | Discover | `career scan` | **$0** | Hits Greenhouse / Lever / Ashby APIs directly |
 | Score | `career score` | claude CLI (batched) | Scores all new jobs 0–100 against your profile |
 | Apply | `career apply <id>` | claude CLI (1 call) | Generates ATS summary, cover letter, keywords |
+| **Paste-a-link** | **`career applylink <url>`** | **claude CLI (3 calls)** | **Paste any job URL → fetches JD, tailors an ATS résumé (DOCX+PDF), fills the form, pauses before submit** |
 | Auto | `career auto` | claude CLI | Full pipeline: scan → score → apply all strong matches |
 | Batch | `career batch` | claude CLI | Parallel workers — deep A-G evaluation per job |
 | Auto-fill | `career autoapply <id>` | $0 | Playwright fills form — pauses before submit |
@@ -89,6 +90,14 @@ career track                       # View all applications
 # Option B — Fully automated
 career auto                        # scan + score + apply all strong matches
 career auto --min-score 80         # Only apply for score >= 80
+
+# Option C — Paste-a-link (one-shot, no scan required)
+career applylink https://jobs.lever.co/<company>/<posting-id>
+# → fetches JD via claude WebFetch
+# → generates ATS summary, cover letter, keywords
+# → tailors a résumé → output/resume-<job_id>.docx + .pdf
+# → if Greenhouse/Lever/Ashby: opens browser, fills form, PAUSES
+# → you press Enter to submit
 ```
 
 ---
@@ -166,6 +175,7 @@ Supported portals: **Greenhouse**, **Lever**, **Ashby**, **Wellfound** (Playwrig
 career scan                          Discover new jobs — zero AI cost
 career score                         Score unscored jobs via claude CLI (batched)
 career apply <job_id>                Generate ATS summary, cover letter, keywords
+career applylink <url>               Paste-a-link: URL → résumé (DOCX+PDF) → fill form → pause to submit
 career auto [--min-score N]          Full pipeline: scan + score + apply all ≥ N
 career autoapply <job_id>            Playwright form fill → pause → you confirm
 career track                         Show application status table
@@ -214,6 +224,34 @@ You can also drive the batch runner directly from bash:
 ./batch/batch-runner.sh --parallel 3
 ./batch/batch-runner.sh --retry-failed
 ```
+
+---
+
+## Paste-a-Link Mode (`career applylink`)
+
+The fastest path from "I just saw a job post" to "form is filled, ready to submit."
+
+```bash
+career applylink https://jobs.lever.co/acme/abc-123
+```
+
+What happens, in order:
+
+1. **Fetch** — the `claude` CLI's WebFetch reads the job page and returns a structured JSON blob (title, company, location, description, requirements). Works for SPA boards where raw HTML scraping fails.
+2. **Materials** — ATS summary (≤80 words), cover letter (≤120 words), and 5 ATS keywords.
+3. **Résumé** — a fresh **ATS-friendly DOCX and PDF** rendered at `output/resume-<job_id>.docx` / `.pdf`. Single column, Calibri 11pt, Word's built-in "List Bullet" style, no tables or text boxes — the formula every major ATS parser handles cleanly. Bullets are pulled from your `profile.yml` and ordered/filtered by how well they match the job.
+4. **Tracker** — SQLite row created with status `scored`.
+5. **Fill** — if the URL is Greenhouse/Lever/Ashby, the browser opens and fills the form using your profile + the freshly tailored résumé.
+6. **Pause** — you visually verify the form in the browser, then press Enter to submit. No auto-submit. Ever.
+7. **Tracker** — status flipped to `applied` once you confirm.
+
+**Unsupported URL hosts** (Workday, iCIMS, Taleo, etc.) still produce the tailored résumé + materials — you just apply manually and upload the generated PDF.
+
+**Re-running with the same URL** is idempotent: steps 1–2 are skipped, the résumé is regenerated, and you jump straight to the preview panel.
+
+### Requirements for PDF output
+
+`docx2pdf` converts the DOCX to PDF using **Word on Windows** or **LibreOffice on Linux/macOS**. If neither is installed, the flow still succeeds — the form handler uploads the DOCX directly, which every major ATS (Greenhouse, Lever, Ashby, Workday) accepts.
 
 ---
 
@@ -276,6 +314,7 @@ career_ai/
 │   ├── scan.py         Zero-token HTTP scraping + dedup
 │   ├── score.py        Batched claude scoring (20 jobs/call)
 │   ├── apply.py        Single-job application generation
+│   ├── applylink.py    Paste-a-link: URL → JD → résumé → fill form
 │   ├── batch.py        Parallel worker orchestration + merge
 │   ├── auto.py         Full automated pipeline (scan+score+apply)
 │   └── track.py        SQLite → Rich table
@@ -283,7 +322,11 @@ career_ai/
 │   ├── greenhouse.py   boards-api.greenhouse.io — single call with content
 │   ├── lever.py        api.lever.co/v0/postings — top-level list
 │   ├── ashby.py        api.ashbyhq.com — list + per-job detail
+│   ├── url_fetcher.py  Arbitrary URL → Job via claude WebFetch
 │   └── wellfound.py    Playwright-based (optional)
+├── resume/
+│   ├── generator.py    claude → structured résumé JSON (tailored to job)
+│   └── renderer.py     JSON → ATS-friendly DOCX + PDF
 ├── storage/
 │   ├── cache.py        JSON file operations — append, dedup, update in-place
 │   └── tracker.py      SQLite CRUD — applications table
