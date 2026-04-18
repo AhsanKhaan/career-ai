@@ -23,7 +23,23 @@
       "Bash(ls /c/Python*)",
       "Read(//c/Users/Ahsan Khan/AppData/Local/Programs//**)",
       "Bash(PYTHONUTF8=1 PATH=\"$SCRIPTS:$PATH\" career score:*)",
-      "Bash(PYTHONUTF8=1 PATH=\"$CLAUDE_DIR:$SCRIPTS:$PATH\" career score:*)"
+      "Bash(PYTHONUTF8=1 PATH=\"$CLAUDE_DIR:$SCRIPTS:$PATH\" career score:*)",
+      "Bash('/c/Users/Ahsan Khan/AppData/Local/Packages/Claude_pzs8sxrjxfjjc/LocalCache/Roaming/Claude/claude-code/2.1.101/claude.exe' -p 'say hi' --dangerously-skip-permissions)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash($PYTHON:*)",
+      "Bash(PYTHONUTF8=1 PATH=\"$SCRIPTS:$PATH\" career apply:*)",
+      "Bash(PYTHONUTF8=1 PATH=\"$SCRIPTS:$PATH\" career track:*)",
+      "Bash('/c/Users/Ahsan Khan/AppData/Local/Packages/Claude_pzs8sxrjxfjjc/LocalCache/Roaming/Claude/claude-code/2.1.101/claude.exe' -p --dangerously-skip-permissions --append-system-prompt-file C:/Work/career-ai/batch/.profile-context.md 'Return this JSON array: [{\"job_id\":\"test\",\"score\":75,\"decision\":\"apply\",\"reasoning\":\"good fit\"}]')",
+      "Bash(ls -la /c/Work/career-ai/*.toml /c/Work/career-ai/*.py)",
+      "Bash(chmod +x \"C:\\\\Work\\\\career-ai\\\\.git\\\\hooks\\\\pre-commit\")",
+      "Bash(py -m pytest tests/ --ignore=tests/test_scrapers.py -v --tb=short)",
+      "Bash(PYTHONUTF8=1 $PYTHON:*)",
+      "Bash(py -m pytest tests/ --ignore=tests/test_scrapers.py -q --tb=line)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create --base main --head fix/claude-cli-hardening-self-heal --title 'Harden claude CLI client and remove API key remnants' --body ':*)"
     ]
   }
 }
