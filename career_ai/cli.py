@@ -1,7 +1,10 @@
 """CLI entry point.
 
 Commands use lazy imports so that 'career scan' never imports
-Playwright or the Anthropic SDK unless those commands are invoked.
+Playwright or the claude CLI client unless those commands are invoked.
+
+No API key required — all AI calls go through the `claude` CLI
+(Claude Max/Pro subscription).
 
 OpenClaw: profile.yml and portals.yml are NOT read at import time.
 Config is only loaded when a command that needs it actually runs.
@@ -9,11 +12,18 @@ Config is only loaded when a command that needs it actually runs.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import typer
 from dotenv import load_dotenv
 from rich.console import Console
+
+# Windows: reconfigure stdout/stderr to UTF-8 so Rich can render ✓, ✗, etc.
+# Without this, CP1252 terminals crash on any non-ASCII character.
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # Load .env if present (optional — no API key required for claude CLI usage)
 load_dotenv(Path(".env"), override=False)
